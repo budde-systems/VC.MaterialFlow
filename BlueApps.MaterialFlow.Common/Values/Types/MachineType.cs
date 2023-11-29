@@ -1,9 +1,8 @@
-﻿namespace BlueApps.MaterialFlow.Common.Values.Types
+﻿namespace BlueApps.MaterialFlow.Common.Values.Types;
+
+public enum MachineType : byte
 {
-    public enum MachineType : byte
-    {
-        None = 0,
-        PLC = 1,
-        Webservice = 2,
-    }
+    None = 0,
+    PLC = 1,
+    Webservice = 2,
 }
