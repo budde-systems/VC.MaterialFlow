@@ -3,6 +3,7 @@
 public class DockedTelescopeEventArgs : System.EventArgs
 {
     public IEnumerable<string>? Gates { get; set; }
+
     /// <summary>
     /// Event time
     /// </summary>

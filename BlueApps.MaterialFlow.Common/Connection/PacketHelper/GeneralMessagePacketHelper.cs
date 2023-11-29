@@ -29,7 +29,7 @@ public class GeneralMessagePacketHelper : MessagePacketHelper
         if (GeneralPacket is null)
             throw new ArgumentNullException(nameof(GeneralPacket));
 
-        var packet = new MessagePacket()
+        var packet = new MessagePacket
         {
             Topic = OutTopic,
             Data = JsonSerializer.Serialize(GeneralPacket),
@@ -52,14 +52,14 @@ public class GeneralMessagePacketHelper : MessagePacketHelper
         GeneralPacket?.NoReads?.Clear();
     }            
 
-    public void CreateNoReadContext(params NoRead[] noreads)
+    public void CreateNoReadContext(params NoRead[] noReads)
     {
         InitGeneralPacket();
 
         if (GeneralPacket?.NoReads is null)
             GeneralPacket.NoReads = new();
 
-        GeneralPacket.NoReads.AddRange(noreads);
+        GeneralPacket.NoReads.AddRange(noReads);
 
         if (!GeneralPacket.PacketContextes.Any(_ => _ == GeneralPacketContext.NoRead))
             GeneralPacket.PacketContextes.Add(GeneralPacketContext.NoRead);

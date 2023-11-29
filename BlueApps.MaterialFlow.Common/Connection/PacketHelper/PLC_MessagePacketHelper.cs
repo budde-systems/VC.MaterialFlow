@@ -94,7 +94,7 @@ public abstract class PLC_MessagePacketHelper : MessagePacketHelper
         if (PacketSettings is null)
             return false;
 
-        return PacketSettings.MaxStringLength > 0 && PacketSettings.AreaLengths != null && PacketSettings.AreaLengths.Length > 0
+        return PacketSettings is {MaxStringLength: > 0, AreaLengths.Length: > 0}
                && !char.IsWhiteSpace(PacketSettings.FillChar) && !char.IsWhiteSpace(PacketSettings.Delimeter);
     }
 

@@ -6,11 +6,17 @@ namespace BlueApps.MaterialFlow.Common.Machines.BaseMachines;
 public class FlowSort : IDiverter
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
+
     public string Name { get; set; }
+
     public string BasePosition { get; set; }
+
     public string SubPosition { get; set; }
+
     public Direction DriveDirection { get; set; }
+
     public List<Toward> Towards { get; set; }
+
     public Scanner RelatedScanner { get; set; }
 
     public virtual void SetDirection(Direction driveDirection)
@@ -40,7 +46,7 @@ public class FlowSort : IDiverter
             {
                 //TODO: exception
             }
-            else if (towards.Where(x => x.FaultDirection).Count() > 1)
+            else if (towards.Count(x => x.FaultDirection) > 1)
             {
                 //TODO: exception
             }
@@ -53,14 +59,10 @@ public class FlowSort : IDiverter
 
     public virtual void SetRelatedScanner(Scanner relatedScanner)
     {
-        if (relatedScanner is null)
-            throw new ArgumentNullException(nameof(relatedScanner));
-
-        RelatedScanner = relatedScanner;
+        RelatedScanner = relatedScanner ?? throw new ArgumentNullException(nameof(relatedScanner));
     }
 
-    public bool DivertersScanner(string scannersBasePosition) =>
-        RelatedScanner.BasePosition == scannersBasePosition;
+    public bool DivertersScanner(string scannersBasePosition) => RelatedScanner.BasePosition == scannersBasePosition;
 
     public override string ToString() => $"{BasePosition}:{SubPosition} [{Name}]";
 }

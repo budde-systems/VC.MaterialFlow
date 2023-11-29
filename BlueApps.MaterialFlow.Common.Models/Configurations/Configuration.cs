@@ -6,6 +6,7 @@ public class Configuration
 {
     [JsonPropertyName("key")]
     public string? Key { get; set; }
+
     [JsonPropertyName("value")]
     public object? Value { get; set; }
 }

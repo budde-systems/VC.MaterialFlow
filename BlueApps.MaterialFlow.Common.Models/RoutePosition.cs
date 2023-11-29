@@ -3,9 +3,10 @@
 public class RoutePosition
 {
     public string? Id { get; set; }
-    public string? Name { get; set; }
-    public Destination Destination { get; private set; }
 
+    public string? Name { get; set; }
+
+    public Destination Destination { get; private set; }
 
     /// <summary>
     /// 
@@ -14,14 +15,7 @@ public class RoutePosition
     /// <exception cref="ArgumentNullException"></exception>
     public void SetRoutePosition(Destination destination)
     {
-        if (destination != null)
-        {
-            Destination = destination;
-            Name = destination.Name;
-        }
-        else
-        {
-            throw new ArgumentNullException();
-        }
+        Destination = destination ?? throw new ArgumentNullException(nameof(destination));
+        Name = destination.Name;
     }
 }

@@ -61,7 +61,7 @@ public class MqttClient : IClient //abstract?
 
         if (buffer != null)
         {
-            var messageEvent = new MessagePacketEventArgs()
+            var messageEvent = new MessagePacketEventArgs
             {
                 Message = DeserializeData(buffer),
                 ClientId = msg.ClientId ?? ""
@@ -237,7 +237,7 @@ public class MqttClient : IClient //abstract?
     {
         var data = Encoding.ASCII.GetString(buffer);
 
-        var msgPacket = new MessagePacket()
+        var msgPacket = new MessagePacket
         {
             Data = data
         };
