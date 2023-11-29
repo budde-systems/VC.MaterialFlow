@@ -1,19 +1,12 @@
 ﻿using BlueApps.MaterialFlow.Common.Connection.Packets;
 using BlueApps.MaterialFlow.Common.Connection.Packets.Events;
-using BlueApps.MaterialFlow.Common.Models.EventArgs;
-using BlueApps.MaterialFlow.Common.Values.Types;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
-using MQTTnet.Exceptions;
 using MQTTnet.Packets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace BlueApps.MaterialFlow.Common.Connection.Client
 {

@@ -34,3 +34,19 @@ C:\Users\Foxhound\OneDrive - Budde Systems GmbH\Development_Budde\VisualStudio\B
 C:\Users\Foxhound\OneDrive - Budde Systems GmbH\Development_Budde\VisualStudio\BlueApps.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\refint\BlueApps.MaterialFlow.Common.dll
 C:\Users\Foxhound\OneDrive - Budde Systems GmbH\Development_Budde\VisualStudio\BlueApps.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\BlueApps.MaterialFlow.Common.pdb
 C:\Users\Foxhound\OneDrive - Budde Systems GmbH\Development_Budde\VisualStudio\BlueApps.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\ref\BlueApps.MaterialFlow.Common.dll
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\BlueApps.MaterialFlow.Common.csproj.AssemblyReference.cache
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\BlueApps.MaterialFlow.Common.GeneratedMSBuildEditorConfig.editorconfig
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\BlueApps.MaterialFlow.Common.AssemblyInfoInputs.cache
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\BlueApps.MaterialFlow.Common.AssemblyInfo.cs
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\BlueApps.MaterialFlow.Common.csproj.CoreCompileInputs.cache
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\BlueApps.MaterialFlow.Common.sourcelink.json
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\BlueApps.MaterialFlow.Common.dll
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\refint\BlueApps.MaterialFlow.Common.dll
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\BlueApps.MaterialFlow.Common.pdb
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\bin\Debug\net7.0\BlueApps.MaterialFlow.Common.deps.json
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\bin\Debug\net7.0\BlueApps.MaterialFlow.Common.dll
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\bin\Debug\net7.0\BlueApps.MaterialFlow.Common.pdb
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\bin\Debug\net7.0\BlueApps.MaterialFlow.Common.Models.dll
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\bin\Debug\net7.0\BlueApps.MaterialFlow.Common.Models.pdb
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\BlueApps.MaterialFlow.Common.csproj.CopyComplete
+C:\_Work\_Budde\VC.MaterialFlow\BlueApps.MaterialFlow.Common\obj\Debug\net7.0\ref\BlueApps.MaterialFlow.Common.dll

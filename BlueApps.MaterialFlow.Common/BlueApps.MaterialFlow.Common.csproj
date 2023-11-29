@@ -16,10 +16,4 @@
     <ProjectReference Include="..\BlueApps.MaterialFlow.Common.Models\BlueApps.MaterialFlow.Common.Models.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="ToolContainerA">
-      <HintPath>..\..\ToolContainerA\bin\Debug\net6.0\ToolContainerA.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

@@ -1,11 +1,5 @@
-﻿using BlueApps.MaterialFlow.Common.Connection.Packets;
-using BlueApps.MaterialFlow.Common.Models;
+﻿using BlueApps.MaterialFlow.Common.Models;
 using BlueApps.MaterialFlow.Common.Models.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BlueApps.MaterialFlow.Common.Machines.BaseMachines
 {

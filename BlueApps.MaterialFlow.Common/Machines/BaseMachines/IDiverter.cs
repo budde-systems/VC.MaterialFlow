@@ -1,5 +1,4 @@
-﻿using BlueApps.MaterialFlow.Common.Connection.Packets;
-using BlueApps.MaterialFlow.Common.Models;
+﻿using BlueApps.MaterialFlow.Common.Models;
 using BlueApps.MaterialFlow.Common.Models.Machines;
 using BlueApps.MaterialFlow.Common.Models.Types;
 

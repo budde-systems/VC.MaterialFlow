@@ -3,8 +3,6 @@ using BlueApps.MaterialFlow.Common.Machines;
 using BlueApps.MaterialFlow.Common.Machines.BaseMachines;
 using BlueApps.MaterialFlow.Common.Models;
 using BlueApps.MaterialFlow.Common.Models.EventArgs;
-using BlueApps.MaterialFlow.Common.Models.Machines;
-using BlueApps.MaterialFlow.Common.Values.Types;
 using Microsoft.Extensions.Logging;
 
 namespace BlueApps.MaterialFlow.Common.Sectors

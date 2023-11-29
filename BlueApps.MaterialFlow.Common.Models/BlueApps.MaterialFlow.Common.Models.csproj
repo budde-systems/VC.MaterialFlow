@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Machines\BaseMachines\" />
+    <Compile Remove="Machines\BaseMachines\**" />
+    <EmbeddedResource Remove="Machines\BaseMachines\**" />
+    <None Remove="Machines\BaseMachines\**" />
   </ItemGroup>
 
 </Project>

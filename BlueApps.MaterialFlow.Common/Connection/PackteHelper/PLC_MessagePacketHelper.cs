@@ -1,13 +1,8 @@
 ﻿using BlueApps.MaterialFlow.Common.Connection.Packets;
 using BlueApps.MaterialFlow.Common.Connection.PackteHelper;
 using BlueApps.MaterialFlow.Common.Values.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
+using BlueApps.MaterialFlow.Common.Utils;
 
 namespace BlueApps.MaterialFlow.Common.Connection.PacketHelper
 {
@@ -58,7 +53,7 @@ namespace BlueApps.MaterialFlow.Common.Connection.PacketHelper
             CreatePacketId();
         }
 
-        public void CreatePacketId() => PacketId = ToolContainerA.StringTools.GetRandomString(PacketSettings?.AreaLengths[1] ?? 5);
+        public void CreatePacketId() => PacketId = StringUtils.GetRandomString(PacketSettings?.AreaLengths[1] ?? 5);
 
         public void ClearAreas()
         {
