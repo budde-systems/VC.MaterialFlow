@@ -17,6 +17,7 @@ public class MqttClient : IClient //abstract?
     public event EventHandler? ClientDisconnected;
 
     public string BrokerIPAddress { get; private set; } = null!;
+
     public bool IsConnected { get; private set; }
 
     private readonly string _clientId;
@@ -54,17 +55,14 @@ public class MqttClient : IClient //abstract?
 
     private Task MessageReceived(MqttApplicationMessageReceivedEventArgs? msg) //TODO: Bestätigung ergänzen? => msg.AcknowledgeAsync()
     {
-        if (msg is null || msg.ApplicationMessage is null)
-            return Task.CompletedTask;
-
-        var buffer = msg.ApplicationMessage.PayloadSegment.Array;
+        var buffer = msg?.ApplicationMessage?.PayloadSegment.Array;
 
         if (buffer != null)
         {
             var messageEvent = new MessagePacketEventArgs
             {
                 Message = DeserializeData(buffer),
-                ClientId = msg.ClientId ?? ""
+                ClientId = msg!.ClientId ?? ""
             };
 
             messageEvent.Message.Topic = msg.ApplicationMessage.Topic;
