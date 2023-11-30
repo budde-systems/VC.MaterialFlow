@@ -30,7 +30,7 @@ public abstract class Sector
     /// </summary>
     public bool IsActive { get; set; }
 
-    public event EventHandler<TrackedPacket> NewPackageInSector;
+    public event EventHandler<TrackedPacket>? NewPackageInSector;
     
     protected IClient _client;
     protected ILogger<Sector> _logger;
@@ -44,8 +44,7 @@ public abstract class Sector
 
     public void AddLogger(ILogger<Sector> logger)
     {
-        if (logger != null)
-            _logger = logger;
+        _logger = logger;
     }
 
     protected void AddTrackedPacket(int tracedPacketId, int shipmentId, string? destinationName = null)
