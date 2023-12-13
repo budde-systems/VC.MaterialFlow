@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Packets;
-using System.Net;
 using System.Text;
 
 namespace BlueApps.MaterialFlow.Common.Connection.Client;
@@ -36,7 +35,7 @@ public class MqttClient : IClient //abstract?
         _logger = logger;
         _configuration = configuration;
 
-        _clientId = $"{(configuration["MyClientId"] ?? "Client")}-{Guid.NewGuid()}";
+        _clientId = $"{configuration["MyClientId"] ?? "Client"}-{Guid.NewGuid()}";
         _topicPlc = configuration["PLC_To_Workerservice"] ?? "";
         _topicWebService = configuration["Webservice_To_Workerservice"] ?? "";
 
@@ -96,76 +95,34 @@ public class MqttClient : IClient //abstract?
         return Task.CompletedTask;
     }
 
+    
     public async Task Connect(CancellationToken cancellationToken)
     {
-        try
-        {
-            var ipAddresses = _configuration["BrokerIPAddress"] is { } configBrokerIpAddress ? new List<string> {configBrokerIpAddress} : new List<string>();
-            if (GetInterNetworkIPAddresses() is { } localNetworkIps) localNetworkIps.ToList().ForEach(ip => ipAddresses.Add(ip.MapToIPv4().ToString()));
-
-            foreach (var ip in ipAddresses)
-            {
-                _logger.LogInformation($"Connection establishment to IP Address {ip}:{_configuration["BrokerPort"]} is started...");
-
-                try
-                {
-                    var options = GetOptions(ip);
-                    BrokerIPAddress = ip;
-
-                    await _client.ConnectAsync(options, cancellationToken);
-                    await SubscribeToTopics();
-
-                    break;
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogWarning(exception.Message);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex.ToString());
-        }
+        BrokerIPAddress = _configuration["BrokerIPAddress"] ?? "127.0.0.1";
+        var options = GetOptions();
+        await _client.ConnectAsync(options, cancellationToken);
+        await SubscribeToTopics();
     }
 
-    private MqttClientOptions GetOptions(string ipAddress)
-    {
-        var options = _mqttFactory.CreateClientOptionsBuilder()
-            .WithClientId(_clientId)
-            .WithTcpServer(ipAddress, int.Parse(_configuration["BrokerPort"] ?? "1883"))
-            .Build();
-
-        return options;
-    }
-
-    private IEnumerable<IPAddress> GetInterNetworkIPAddresses()
-    {
-        var hostname = Dns.GetHostName();
-        var addresses = Dns.GetHostEntry(hostname).AddressList
-            .Where(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-
-        return addresses;
-    }
+    private MqttClientOptions GetOptions() => _mqttFactory.CreateClientOptionsBuilder()
+        .WithClientId(_clientId)
+        .WithTcpServer(BrokerIPAddress, int.Parse(_configuration["BrokerPort"] ?? "1883"))
+        .Build();
 
     private async Task SubscribeToTopics() //TODO: to all topics from commondata / configuration
     {
-        MqttClientSubscribeOptions? subscribeOptions;
+        if (_topics.Count > 0)
+        {
+        }
+
+
+        MqttClientSubscribeOptions subscribeOptions;
 
         if (_topics.Count > 0)
         {
-            subscribeOptions = _mqttFactory.CreateSubscribeOptionsBuilder()
-                .Build();
-
-            foreach (var topic in _topics)
-            {
-                var filter = new MqttTopicFilter
-                {
-                    Topic = topic
-                };
-
-                subscribeOptions.TopicFilters.Add(filter);
-            }
+            subscribeOptions = _mqttFactory.CreateSubscribeOptionsBuilder().Build();
+            subscribeOptions.TopicFilters.AddRange(_topics.Select(topic => new MqttTopicFilter { Topic = topic }));
+           
         }
         else
         {
