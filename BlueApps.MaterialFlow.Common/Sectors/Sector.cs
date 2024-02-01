@@ -24,21 +24,14 @@ namespace BlueApps.MaterialFlow.Common.Sectors
 
         public event EventHandler<TrackedPacket> NewPackageInSector;
 
-
         protected IClient _client;
         protected ILogger<Sector> _logger;
 
-
-        public Sector(IClient client, string name, string baseposition)
+        public Sector(IClient client, ILogger<Sector> logger, string name, string baseposition)
         {
             Name = name;
             BasePosition = baseposition;
             _client = client;
-        }
-
-        public void AddLogger(ILogger<Sector> logger)
-        {
-            if (logger != null)
             _logger = logger;
         }
 
