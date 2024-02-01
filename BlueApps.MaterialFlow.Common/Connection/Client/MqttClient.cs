@@ -103,58 +103,25 @@ namespace BlueApps.MaterialFlow.Common.Connection.Client
 
         public async Task Connect(CancellationToken cancellationToken)
         {
+            var brokerAddress = _configuration["BrokerIPAddress"] ?? "localhost";
+            var brokerPort = _configuration["BrokerPort"] ?? "1883";
+
             try
             {
-                var ips = GetInterNetworkIPAddresses().Select(x => x.MapToIPv4().ToString()).ToArray();
-                string[] ipAddresses = new string[0];
+                _logger.LogInformation($"Connecting to MQTT broker at {brokerAddress}:{brokerPort}...");
 
-                Array.Resize(ref ipAddresses, ips.Length + 1);
-                Array.Copy(ips, 0, ipAddresses, 0, ips.Length);
-                ipAddresses[ipAddresses.Length - 1] = _configuration["BrokerIPAddress"];
+                var options = _mqttFactory.CreateClientOptionsBuilder()
+                    .WithClientId(_clientId)
+                    .WithTcpServer(brokerAddress, int.Parse(brokerPort))
+                    .Build();
 
-                for (int i = 0; i < ipAddresses.Length; i++)
-                {
-                    _logger.LogInformation($"Connection establishment to IP Address {ipAddresses[i]}:{_configuration["BrokerPort"]} is started...");
-
-                    try
-                    {
-                        var options = GetOptions(ipAddresses[i]);
-                        BrokerIPAddress = ipAddresses[i];
-
-                        await _client.ConnectAsync(options, cancellationToken);
-                        await SubscribeToTopics();
-
-                        break;
-                    }
-                    catch (Exception exception)
-                    {
-                        _logger.LogWarning(exception.Message);
-                    }
-                }
+                await _client.ConnectAsync(options, cancellationToken);
+                await SubscribeToTopics();
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex.ToString());
+                _logger.LogWarning($"Failed to connect MQTT broker at {brokerAddress}:{brokerPort}");
             }
-        }
-
-        private MqttClientOptions GetOptions(string ipAddress)
-        {
-            var options = _mqttFactory.CreateClientOptionsBuilder()
-                .WithClientId(_clientId)
-                .WithTcpServer(ipAddress, int.Parse(_configuration["BrokerPort"]))
-                .Build();
-
-            return options;
-        }
-
-        private IEnumerable<IPAddress>? GetInterNetworkIPAddresses()
-        {
-            var hostname = Dns.GetHostName();
-            var addresses = Dns.GetHostEntry(hostname).AddressList
-                .Where(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-
-            return addresses;
         }
 
         private async Task SubscribeToTopics() //TODO: to all topics from commondata / configuration
