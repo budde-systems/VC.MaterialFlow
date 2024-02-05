@@ -1,7 +1,6 @@
-﻿namespace BlueApps.MaterialFlow.Common.Connection.Packets.Events
+﻿namespace BlueApps.MaterialFlow.Common.Connection.Packets.Events;
+
+public class GeneralPacketEventArgs : EventArgs
 {
-    public class GeneralPacketEventArgs : EventArgs
-    {
-        public GeneralPacket? GeneralPacket { get; set; }
-    }
+    public GeneralPacket? GeneralPacket { get; set; }
 }

@@ -1,7 +1,6 @@
-﻿namespace BlueApps.MaterialFlow.Common.Models.EventArgs
+﻿namespace BlueApps.MaterialFlow.Common.Models.EventArgs;
+
+public interface IDataEventArgs
 {
-    public interface IDataEventArgs
-    {
-         DateTime AtTime { get; set; }
-    }
+    DateTime AtTime { get; set; }
 }

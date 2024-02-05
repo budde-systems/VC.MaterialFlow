@@ -2,32 +2,31 @@
 using BlueApps.MaterialFlow.Common.Connection.PackteHelper;
 using BlueApps.MaterialFlow.Common.Models.EventArgs;
 
-namespace BlueApps.MaterialFlow.Common.Connection.Packets
+namespace BlueApps.MaterialFlow.Common.Connection.Packets;
+
+public abstract class MessageDistributor
 {
-    public abstract class MessageDistributor
+    public abstract event EventHandler<BarcodeScanEventArgs> BarcodeScanned;
+    public abstract event EventHandler<WeightScanEventArgs> WeigtScanned;
+    public abstract event EventHandler<UnsubscribedPacketEventArgs> UnsubscribedPacket;
+    public abstract event EventHandler<ErrorcodeEventArgs> ErrorcodeTriggered;
+
+    protected readonly List<MessagePacketHelper> _packetHelpers;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="packetHelpers"></param>
+    /// <exception cref="ArgumentException"></exception>
+    public MessageDistributor(List<MessagePacketHelper> packetHelpers)
     {
-        public abstract event EventHandler<BarcodeScanEventArgs> BarcodeScanned;
-        public abstract event EventHandler<WeightScanEventArgs> WeigtScanned;
-        public abstract event EventHandler<UnsubscribedPacketEventArgs> UnsubscribedPacket;
-        public abstract event EventHandler<ErrorcodeEventArgs> ErrorcodeTriggered;
+        _packetHelpers = packetHelpers;
 
-        protected readonly List<MessagePacketHelper> _packetHelpers;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="packetHelpers"></param>
-        /// <exception cref="ArgumentException"></exception>
-        public MessageDistributor(List<MessagePacketHelper> packetHelpers)
+        if (packetHelpers == null || !packetHelpers.Any())
         {
-            _packetHelpers = packetHelpers;
-
-            if (packetHelpers == null || !packetHelpers.Any())
-            {
-                throw new ArgumentException("PacketHelpers cannot be empty or null!");
-            }
+            throw new ArgumentException("PacketHelpers cannot be empty or null!");
         }
-
-        public abstract void DistributeIncommingMessages(object sender, MessagePacketEventArgs messageEvent);
     }
+
+    public abstract void DistributeIncomingMessages(object sender, MessagePacketEventArgs messageEvent);
 }

@@ -5,109 +5,108 @@ using BlueApps.MaterialFlow.Common.Models;
 using BlueApps.MaterialFlow.Common.Models.EventArgs;
 using Microsoft.Extensions.Logging;
 
-namespace BlueApps.MaterialFlow.Common.Sectors
+namespace BlueApps.MaterialFlow.Common.Sectors;
+
+public abstract class Sector
 {
-    public abstract class Sector
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Name { get; init; }
+    public string BasePosition { get; set; }
+    public Scanner BarcodeScanner { get; set; }
+    public List<Scanner> BarcodeScanners { get; set; } //TODO: Diese prop verwenden, statt einen Scanner!
+    public ICollection<IDiverter> Diverters { get; set; }
+    public List<TrackedPacket> TrackedPackets { get; set; }
+    public List<short> RelatedErrorcodes { get; set; } = new();
+    /// <summary>
+    /// Sector logic is active
+    /// </summary>
+    public bool IsActive { get; set; }
+
+    public event EventHandler<TrackedPacket> NewPackageInSector;
+
+    protected MqttClient _client;
+    protected ILogger<Sector> _logger;
+
+    protected Sector(MqttClient client, ILogger<Sector> logger, string name, string baseposition)
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string Name { get; init; }
-        public string BasePosition { get; set; }
-        public Scanner BarcodeScanner { get; set; }
-        public List<Scanner> BarcodeScanners { get; set; } //TODO: Diese prop verwenden, statt einen Scanner!
-        public ICollection<IDiverter> Diverters { get; set; }
-        public List<TrackedPacket> TrackedPackets { get; set; }
-        public List<short> RelatedErrorcodes { get; set; } = new();
-        /// <summary>
-        /// Sector logic is active
-        /// </summary>
-        public bool IsActive { get; set; }
+        Name = name;
+        BasePosition = baseposition;
+        _client = client;
+        _logger = logger;
+    }
 
-        public event EventHandler<TrackedPacket> NewPackageInSector;
+    protected void AddTrackedPacket(int tracedPacketId, int shipmentId, string? destinationName = null)
+    {
+        if (TrackedPackets is null)
+            TrackedPackets = new List<TrackedPacket>();
 
-        protected IClient _client;
-        protected ILogger<Sector> _logger;
+        var tracking = new TrackedPacket(tracedPacketId);
 
-        public Sector(IClient client, ILogger<Sector> logger, string name, string baseposition)
-        {
-            Name = name;
-            BasePosition = baseposition;
-            _client = client;
-            _logger = logger;
-        }
+        if (!string.IsNullOrEmpty(destinationName))
+            tracking.DestinationName = destinationName;
 
-        protected void AddTrackedPacket(int tracedPacketId, int shipmentId, string? destinationName = null)
-        {
-            if (TrackedPackets is null)
-                TrackedPackets = new List<TrackedPacket>();
+        if (shipmentId > 0)
+            tracking.ShipmentId = shipmentId;
 
-            var tracking = new TrackedPacket(tracedPacketId);
+        tracking.SectorId = Id;
+        tracking.SectorName = Name;
 
-            if (!string.IsNullOrEmpty(destinationName))
-                tracking.DestinationName = destinationName;
+        TrackedPackets.Add(tracking);
 
-            if (shipmentId > 0)
-                tracking.ShipmentId = shipmentId;
+        NewPackageInSector?.Invoke(this, tracking);
+    }
 
-            tracking.SectorId = Id;
-            tracking.SectorName = Name;
+    public bool RemoveTrackedPacket(int trackedPacketId = 0, int shipmentId = 0)
+    {
+        if (trackedPacketId > 0 && shipmentId == 0)
+            return TrackedPackets?.RemoveAll(_ => _.TracedPacketId == trackedPacketId) > 0;
 
-            TrackedPackets.Add(tracking);
+        if (trackedPacketId == 0 && shipmentId > 0)
+            return TrackedPackets?.RemoveAll(_ => _.ShipmentId == shipmentId) > 0;
 
-            NewPackageInSector?.Invoke(this, tracking);
-        }
+        if (trackedPacketId > 0 && shipmentId > 0)
+            return TrackedPackets?.RemoveAll(_ => _.TracedPacketId == trackedPacketId && _.ShipmentId == shipmentId) > 0;
 
-        public bool RemoveTrackedPacket(int trackedPacketId = 0, int shipmentId = 0)
-        {
-            if (trackedPacketId > 0 && shipmentId == 0)
-                return TrackedPackets?.RemoveAll(_ => _.TracedPacketId == trackedPacketId) > 0;
+        return false;
+    }            
 
-            if (trackedPacketId == 0 && shipmentId > 0)
-                return TrackedPackets?.RemoveAll(_ => _.ShipmentId == shipmentId) > 0;
+    public bool TrackedPacketExists(int tracedPacketId = 0, int shipmentId = 0)
+    {
+        var exist = false;
 
-            if (trackedPacketId > 0 && shipmentId > 0)
-                return TrackedPackets?.RemoveAll(_ => _.TracedPacketId == trackedPacketId && _.ShipmentId == shipmentId) > 0;
+        if (tracedPacketId > 0)
+            exist = TrackedPackets?.Any(_ => _.TracedPacketId == tracedPacketId) ?? false;
 
-            return false;
-        }            
+        if (shipmentId > 0)
+            exist = TrackedPackets?.Any(_ => _.ShipmentId == shipmentId) ?? false;
 
-        public bool TrackedPacketExists(int tracedPacketId = 0, int shipmentId = 0)
-        {
-            bool exist = false;
+        return exist;
+    }
 
-            if (tracedPacketId > 0)
-                exist = TrackedPackets?.Any(_ => _.TracedPacketId == tracedPacketId) ?? false;
+    protected string? GetDestinationOfTrackedPacket(int packetTracing) =>
+        TrackedPackets.FirstOrDefault(_ => _.TracedPacketId == packetTracing)?.DestinationName;
 
-            if (shipmentId > 0)
-                exist = TrackedPackets?.Any(_ => _.ShipmentId == shipmentId) ?? false;
+    protected bool ErrorInThisSector(short errorcode) => RelatedErrorcodes?.Any(_ => _ == errorcode) ?? false;
 
-            return exist;
-        }
-
-        protected string? GetDestinationOfTrackedPacket(int packetTracing) =>
-            TrackedPackets.FirstOrDefault(_ => _.TracedPacketId == packetTracing)?.DestinationName;
-
-        protected bool ErrorInThisSector(short errorcode) => RelatedErrorcodes?.Any(_ => _ == errorcode) ?? false;
-
-        public abstract Scanner CreateScanner();
-        public abstract ICollection<IDiverter> CreateDiverters();
-        public abstract void AddRelatedErrorcodes();
-        public abstract void Barcode_Scanned(object? sender, BarcodeScanEventArgs scan);
-        public virtual void Weight_Scanned(object? sender, WeightScanEventArgs scan) { }
-        public abstract void UnsubscripedPacket(object? sender, UnsubscribedPacketEventArgs unsubscribedPacket);
-        protected abstract void ErrorHandling(short errorcode);
+    public abstract Scanner CreateScanner();
+    public abstract ICollection<IDiverter> CreateDiverters();
+    public abstract void AddRelatedErrorcodes();
+    public abstract void Barcode_Scanned(object? sender, BarcodeScanEventArgs scan);
+    public virtual void Weight_Scanned(object? sender, WeightScanEventArgs scan) { }
+    public abstract void UnsubscripedPacket(object? sender, UnsubscribedPacketEventArgs unsubscribedPacket);
+    protected abstract void ErrorHandling(short errorcode);
         
-        public virtual void ErrorTriggered(object? sender, ErrorcodeEventArgs error)
+    public virtual void ErrorTriggered(object? sender, ErrorcodeEventArgs error)
+    {
+        if (error.Errorcodes != null)
         {
-            if (error.Errorcodes != null)
+            foreach (var code in error.Errorcodes)
             {
-                foreach (var code in error.Errorcodes)
-                {
-                    if (ErrorInThisSector(code))
-                        ErrorHandling(code);
-                }
+                if (ErrorInThisSector(code))
+                    ErrorHandling(code);
             }
         }
-
-        public override string ToString() => $"{Name} : Base {BasePosition}";
     }
+
+    public override string ToString() => $"{Name} : Base {BasePosition}";
 }

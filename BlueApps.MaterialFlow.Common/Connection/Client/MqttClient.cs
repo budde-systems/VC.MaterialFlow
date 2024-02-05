@@ -5,215 +5,207 @@ using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Packets;
-using System.Net;
 using System.Text;
 
-namespace BlueApps.MaterialFlow.Common.Connection.Client
+namespace BlueApps.MaterialFlow.Common.Connection.Client;
+
+public class MqttClient
 {
-    public class MqttClient : IClient //abstract?
+    public event EventHandler<MessagePacketEventArgs>? OnReceivingMessage;
+    public event EventHandler? ClientConnected;
+    public event EventHandler? ClientDisconnected;
+
+    public string BrokerHost => _configuration["BrokerIPAddress"] ?? "localhost";
+    
+    public int BrokerPort => int.Parse(_configuration["BrokerPort"] ?? "1883");
+    
+    public bool IsConnected { get; private set; } 
+
+    private readonly string _clientId;
+    private readonly string _topicPlc;
+    private readonly string _topicWebservcice;
+    private readonly List<string> _topics = new();
+
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<MqttClient> _logger;
+
+    private readonly IMqttClient _client;
+    private readonly MqttFactory _mqttFactory;
+
+    public MqttClient(ILogger<MqttClient> logger, IConfiguration configuration)
     {
-        public event EventHandler<MessagePacketEventArgs> OnReceivingMessage;
-        public event EventHandler ClientConnected;
-        public event EventHandler ClientDisconnected;
+        _logger = logger;
+        _configuration = configuration;
 
-        public string BrokerIPAddress { get; private set; }
-        public bool IsConnected { get; private set; } 
+        _clientId = $"{configuration["MyClientId"] ?? "Client"}-{Guid.NewGuid()}";
+        _topicPlc = configuration["PLC_To_Workerservice"] ?? "";
+        _topicWebservcice = configuration["Webservice_To_Workerservice"] ?? "";
 
-        private readonly string _clientId;
-        private readonly string _topicPlc;
-        private readonly string _topicWebservcice;
-        private readonly List<string> _topics = new();
+        _mqttFactory = new MqttFactory();
+        _client = _mqttFactory.CreateMqttClient();
+        _client.ConnectedAsync += Connected;
+        _client.DisconnectedAsync += Disconnected;
+        _client.ApplicationMessageReceivedAsync += MessageReceived;
+    }
 
-        private readonly IConfiguration _configuration;
-        private readonly ILogger<MqttClient> _logger;
+    public void AddTopics(params string[]? topics)
+    {
+        if (topics != null)
+            _topics.AddRange(topics);
+    }
 
-        private readonly IMqttClient _client;
-        private readonly MqttFactory _mqttFactory;
+    private Task MessageReceived(MqttApplicationMessageReceivedEventArgs msg) //TODO: Bestätigung ergänzen? => msg.AcknowledgeAsync()
+    {
+        var buffer = msg.ApplicationMessage.PayloadSegment.Array;
 
-        public MqttClient(ILogger<MqttClient> logger, IConfiguration configuration)
+        if (buffer != null)
         {
-            _logger = logger;
-            _configuration = configuration;
-
-            _clientId = $"{(configuration["MyClientId"] ?? "Client")}-{Guid.NewGuid()}";
-            _topicPlc = configuration["PLC_To_Workerservice"] ?? "";
-            _topicWebservcice = configuration["Webservice_To_Workerservice"] ?? "";
-
-            _mqttFactory = new MqttFactory();
-            _client = _mqttFactory.CreateMqttClient();
-            _client.ConnectedAsync += Connected;
-            _client.DisconnectedAsync += Disconnected;
-            _client.ApplicationMessageReceivedAsync += MessageReceived;
-        }
-
-        public void AddTopics(params string[] topics)
-        {
-            if (topics != null)
-                _topics.AddRange(topics);
-        }
-
-        private Task MessageReceived(MqttApplicationMessageReceivedEventArgs msg) //TODO: Bestätigung ergänzen? => msg.AcknowledgeAsync()
-        {
-            if (msg is null || msg.ApplicationMessage is null)
+            var messageEvent = new MessagePacketEventArgs
             {
-                return Task.CompletedTask;
-            }
-            else
-            {
-                var buffer = msg.ApplicationMessage.PayloadSegment.Array;
-
-                if (buffer != null)
-                {
-                    MessagePacketEventArgs messageEvent = new MessagePacketEventArgs()
-                    {
-                        Message = DeserializeData(buffer),
-                        ClientId = msg.ClientId ?? ""
-                    };
+                Message = DeserializeData(buffer),
+                ClientId = msg.ClientId ?? ""
+            };
                     
-                    messageEvent.Message.Topic = msg.ApplicationMessage.Topic;
-
-                    //_logger.LogInformation($"Message received, FROM: {messageEvent.Message.Topic}/ DATA: {messageEvent.Message.Data}"); //remove it later
-
-                    OnReceivingMessage?.Invoke(this, messageEvent); 
-                }
-
-                return Task.CompletedTask;
-            }
+            messageEvent.Message.Topic = msg.ApplicationMessage.Topic;
+            OnReceivingMessage?.Invoke(this, messageEvent); 
         }
 
-        private async Task Disconnected(MqttClientDisconnectedEventArgs arg)
+        return Task.CompletedTask;
+    }
+
+    private Task Disconnected(MqttClientDisconnectedEventArgs arg)
+    {
+        if (arg.ClientWasConnected)
         {
-            if (arg.ClientWasConnected)
-            {
-                IsConnected = _client.IsConnected;
-
-                ClientDisconnected?.Invoke(this, arg);
-            }
-        }
-
-        private Task Connected(MqttClientConnectedEventArgs arg)
-        {
-            _logger.LogInformation($"The client {_clientId} has been connected to broker: {BrokerIPAddress}:{_configuration["BrokerPort"]}");
-            ClientConnected?.Invoke( this, EventArgs.Empty );
-
             IsConnected = _client.IsConnected;
+            ClientDisconnected?.Invoke(this, arg);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task Connected(MqttClientConnectedEventArgs arg)
+    {
+        _logger.LogInformation("The client {0} has been connected to broker: {1}:{2}", _clientId, BrokerHost, BrokerPort);
+        ClientConnected?.Invoke( this, EventArgs.Empty );
+
+        IsConnected = _client.IsConnected;
             
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
+    }
 
-        public async Task Connect(CancellationToken cancellationToken)
+    public async Task Connect(CancellationToken cancellationToken)
+    {
+        try
         {
-            var brokerAddress = _configuration["BrokerIPAddress"] ?? "localhost";
-            var brokerPort = _configuration["BrokerPort"] ?? "1883";
+            _logger.LogInformation("Connecting to MQTT broker at {0}:{1}...", BrokerHost, BrokerPort);
 
-            try
-            {
-                _logger.LogInformation($"Connecting to MQTT broker at {brokerAddress}:{brokerPort}...");
-
-                var options = _mqttFactory.CreateClientOptionsBuilder()
-                    .WithClientId(_clientId)
-                    .WithTcpServer(brokerAddress, int.Parse(brokerPort))
-                    .Build();
-
-                await _client.ConnectAsync(options, cancellationToken);
-                await SubscribeToTopics();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning($"Failed to connect MQTT broker at {brokerAddress}:{brokerPort}");
-            }
-        }
-
-        private async Task SubscribeToTopics() //TODO: to all topics from commondata / configuration
-        {
-            MqttClientSubscribeOptions? subscribeOptions;
-
-            if (_topics.Count > 0)
-            {
-                subscribeOptions = _mqttFactory.CreateSubscribeOptionsBuilder()
+            var options = _mqttFactory.CreateClientOptionsBuilder()
+                .WithClientId(_clientId)
+                .WithTcpServer(BrokerHost, BrokerPort)
                 .Build();
 
-                foreach (var topic in _topics)
-                {
-                    var filter = new MqttTopicFilter();
-                    filter.Topic = topic;
-                    subscribeOptions.TopicFilters.Add(filter);
-                } 
-            }
-            else
+            await _client.ConnectAsync(options, cancellationToken);
+            await SubscribeToTopics();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to connect MQTT broker at {0}:{1}", BrokerHost, BrokerPort);
+        }
+    }
+
+    private async Task SubscribeToTopics()
+    {
+        MqttClientSubscribeOptions? subscribeOptions;
+
+        if (_topics.Count > 0)
+        {
+            subscribeOptions = _mqttFactory.CreateSubscribeOptionsBuilder()
+                .Build();
+
+            foreach (var topic in _topics)
             {
-                subscribeOptions = _mqttFactory.CreateSubscribeOptionsBuilder()
+                var filter = new MqttTopicFilter
+                {
+                    Topic = topic
+                };
+
+                subscribeOptions.TopicFilters.Add(filter);
+            } 
+        }
+        else
+        {
+            subscribeOptions = _mqttFactory.CreateSubscribeOptionsBuilder()
                 .WithTopicFilter(_topicPlc)
                 .WithTopicFilter(_topicWebservcice)
                 .Build();
-            }
-
-            await _client.SubscribeAsync(subscribeOptions);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="messagePacket"></param>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="InvalidOperationException"/>
-        public async void SendData(MessagePacket messagePacket)
+        await _client.SubscribeAsync(subscribeOptions);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="messagePacket"></param>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="InvalidOperationException"/>
+    public async Task SendData(MessagePacket messagePacket)
+    {
+        ValidateMessagePacket(messagePacket);
+
+        try
         {
-            ValidateMessagePacket(messagePacket);
-
-            try
+            if (_client.IsConnected)
             {
-                if (_client.IsConnected)
-                {
-                    var applicationMessage = new MqttApplicationMessageBuilder()
-                            .WithTopic(messagePacket.Topic)
-                            .WithPayload(SerializeData(messagePacket))
-                            .Build();
+                var applicationMessage = new MqttApplicationMessageBuilder()
+                    .WithTopic(messagePacket.Topic)
+                    .WithPayload(SerializeData(messagePacket))
+                    .Build();
 
-                    await _client.PublishAsync(applicationMessage);
+                await _client.PublishAsync(applicationMessage);
 
-                    //_logger.LogInformation($"Send message, TO: {messagePacket.Topic} /DATA: {messagePacket.Data}"); //remove it later
-                }
-                else
-                {
-                    _logger.LogWarning("Could not send data. The client is not connected");
-                }
+                //_logger.LogInformation($"Send message, TO: {messagePacket.Topic} /DATA: {messagePacket.Data}"); //remove it later
             }
-            catch (Exception exception)
+            else
             {
-                _logger.LogError(exception.ToString());
+                _logger.LogWarning("Could not send data. The client is not connected");
             }
         }
-
-        private void ValidateMessagePacket(MessagePacket messagePacket)
+        catch (Exception exception)
         {
-            if (messagePacket is null)
-                throw new ArgumentNullException(nameof(messagePacket));
-
-            if (string.IsNullOrWhiteSpace(messagePacket.Topic))
-                throw new InvalidOperationException("The topic cannot be empty");
-
-            if (string.IsNullOrWhiteSpace(messagePacket.Data))
-                throw new InvalidOperationException("The data cannot be empty");
+            _logger.LogError(exception, "Failed to send MQTT data");
         }
+    }
 
-        private byte[] SerializeData(MessagePacket dataPacket)
+    private void ValidateMessagePacket(MessagePacket messagePacket)
+    {
+        if (messagePacket is null)
+            throw new ArgumentNullException(nameof(messagePacket));
+
+        if (string.IsNullOrWhiteSpace(messagePacket.Topic))
+            throw new InvalidOperationException("The topic cannot be empty");
+
+        if (string.IsNullOrWhiteSpace(messagePacket.Data))
+            throw new InvalidOperationException("The data cannot be empty");
+    }
+
+    private byte[] SerializeData(MessagePacket dataPacket)
+    {
+        var data = Encoding.ASCII.GetBytes(dataPacket.Data);
+
+        return data;
+    }
+
+    private MessagePacket DeserializeData(byte[] buffer)
+    {
+        var data = Encoding.ASCII.GetString(buffer);
+
+        var msgPacket = new MessagePacket
         {
-            var data = Encoding.ASCII.GetBytes(dataPacket.Data);
+            Data = data
+        };
 
-            return data;
-        }
-
-        private MessagePacket DeserializeData(byte[] buffer)
-        {
-            string data = Encoding.ASCII.GetString(buffer);
-
-            var msgPacket = new MessagePacket()
-            {
-                Data = data
-            };
-
-            return msgPacket;
-        }
+        return msgPacket;
     }
 }
