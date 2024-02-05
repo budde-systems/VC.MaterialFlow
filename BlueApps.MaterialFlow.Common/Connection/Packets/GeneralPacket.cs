@@ -6,5 +6,6 @@ namespace BlueApps.MaterialFlow.Common.Connection.Packets;
 public class GeneralPacket : ActionPacket
 {
     public List<GeneralPacketContext> PacketContextes { get; set; }
+
     public List<NoRead>? NoReads { get; set; }
 }

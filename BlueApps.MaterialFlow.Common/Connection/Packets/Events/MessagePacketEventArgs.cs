@@ -6,6 +6,8 @@ public class MessagePacketEventArgs : EventArgs
     /// Received at
     /// </summary>
     public DateTime AtDate { get; set; } = DateTime.Now;
+
     public string? ClientId { get; set; }
+
     public MessagePacket? Message { get; set; }
 }
