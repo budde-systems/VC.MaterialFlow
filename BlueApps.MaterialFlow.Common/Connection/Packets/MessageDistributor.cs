@@ -18,7 +18,7 @@ public abstract class MessageDistributor
     /// </summary>
     /// <param name="packetHelpers"></param>
     /// <exception cref="ArgumentException"></exception>
-    public MessageDistributor(List<MessagePacketHelper> packetHelpers)
+    protected MessageDistributor(List<MessagePacketHelper> packetHelpers)
     {
         _packetHelpers = packetHelpers;
 

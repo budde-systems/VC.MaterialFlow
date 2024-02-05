@@ -6,4 +6,5 @@ public class MessagePacket
     public string Data { get; set; }
     public string Topic { get; set; }
 
+    public override string ToString() => $"{Id}:{Data}:{Topic}";
 }
