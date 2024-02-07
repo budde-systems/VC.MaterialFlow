@@ -90,11 +90,11 @@ public abstract class Sector
 
     public abstract Scanner CreateScanner();
     public abstract ICollection<IDiverter> CreateDiverters();
-    public abstract void AddRelatedErrorcodes();
+    public abstract void AddRelatedErrorCodes();
     public abstract void Barcode_Scanned(object? sender, BarcodeScanEventArgs scan);
     public virtual void Weight_Scanned(object? sender, WeightScanEventArgs scan) { }
-    public abstract void UnsubscripedPacket(object? sender, UnsubscribedPacketEventArgs unsubscribedPacket);
-    protected abstract void ErrorHandling(short errorcode);
+    public abstract void UnsubscribedPacket(object? sender, UnsubscribedPacketEventArgs unsubscribedPacket);
+    protected abstract void ErrorHandling(short errorCode);
         
     public virtual void ErrorTriggered(object? sender, ErrorcodeEventArgs error)
     {
