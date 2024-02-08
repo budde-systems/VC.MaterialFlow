@@ -63,8 +63,6 @@ public abstract class PLC_MessagePacketHelper : MessagePacketHelper
             Areas.Add("");
     }
 
-    #region outAreas
-
     /// <summary>
     /// 
     /// </summary>
@@ -149,10 +147,6 @@ public abstract class PLC_MessagePacketHelper : MessagePacketHelper
         return sb.ToString();
     }
 
-    #endregion
-
-    #region inAreas
-
     public override void SetPacketData(MessagePacket message)
     {
         if (string.IsNullOrWhiteSpace(message.Data))
@@ -210,8 +204,6 @@ public abstract class PLC_MessagePacketHelper : MessagePacketHelper
 
         throw new InvalidOperationException($"The string-command ({firstAreaValue}) is invalid.");
     }
-
-    #endregion
 
     public override string ToString() => Areas is not null ? $"{string.Join(";", Areas)}" : "-";
 }
