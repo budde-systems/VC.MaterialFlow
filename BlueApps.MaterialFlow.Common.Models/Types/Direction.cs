@@ -5,5 +5,5 @@ public enum Direction : byte
     StraightAhead = 0,
     Left = 1,
     Right = 2,
-    Backward = 3,
+    Backward = 3
 }

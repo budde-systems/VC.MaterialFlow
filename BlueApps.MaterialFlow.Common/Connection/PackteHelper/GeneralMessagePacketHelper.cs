@@ -31,7 +31,7 @@ public class GeneralMessagePacketHelper : MessagePacketHelper
         var packet = new MessagePacket
         {
             Topic = OutTopic,
-            Data = JsonSerializer.Serialize(GeneralPacket),
+            Data = JsonSerializer.Serialize(GeneralPacket)
         };
 
         return packet;

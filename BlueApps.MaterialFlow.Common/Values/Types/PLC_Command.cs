@@ -21,5 +21,5 @@ public enum PLC_Command : byte
     C017 = 16,
     C018 = 17,
     C019 = 18,
-    C020 = 19,
+    C020 = 19
 }

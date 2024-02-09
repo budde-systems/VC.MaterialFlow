@@ -7,5 +7,5 @@ public enum GeneralPacketContext : byte
     DiverterReferencing = 2,
     Acknowledge = 3,
     Message = 4,
-    DockedElement = 5,
+    DockedElement = 5
 }

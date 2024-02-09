@@ -9,5 +9,5 @@ public enum ActionKey : byte
     UpdateConfiguration = 4,
     RequestedEntity = 5,
     NewEntity = 6,
-    UpdatedEntity = 7,
+    UpdatedEntity = 7
 }
