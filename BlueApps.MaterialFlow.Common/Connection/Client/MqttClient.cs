@@ -165,7 +165,7 @@ public class MqttClient
 
                 await _client.PublishAsync(applicationMessage);
 
-                //_logger.LogInformation($"Send message, TO: {messagePacket.Topic} /DATA: {messagePacket.Data}"); //remove it later
+                _logger.LogInformation($"Send message, TO: {messagePacket.Topic} /DATA: {messagePacket.Data}"); //remove it later
             }
             else
             {

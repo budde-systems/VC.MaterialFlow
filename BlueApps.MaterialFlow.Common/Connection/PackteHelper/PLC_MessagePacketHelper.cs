@@ -42,7 +42,7 @@ public abstract class PLC_MessagePacketHelper : MessagePacketHelper
         }
     }
 
-    public PLC_MessagePacketHelper(IPacketSettings settings) //Packetsettings in 152004 soll von IPackt.. erben...
+    protected PLC_MessagePacketHelper(IPacketSettings settings) //Packetsettings in 152004 soll von IPackt.. erben...
     {
         PacketSettings = settings;
         Areas = new List<string>(settings.AreaLengths.Length);
