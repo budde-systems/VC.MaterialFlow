@@ -60,13 +60,19 @@ public class MqttClient
 
         if (buffer != null)
         {
+            var messageStr = DeserializeData(buffer);
+
             var messageEvent = new MessagePacketEventArgs
             {
                 Message = DeserializeData(buffer),
                 ClientId = msg.ClientId ?? ""
             };
-                    
+
             messageEvent.Message.Topic = msg.ApplicationMessage.Topic;
+
+            _logger.LogInformation("<<< MQTT | {0} | {1}", messageEvent.Message.Topic, messageEvent.Message.Data);
+
+
             OnReceivingMessage?.Invoke(this, messageEvent); 
         }
 
@@ -165,7 +171,7 @@ public class MqttClient
 
                 await _client.PublishAsync(applicationMessage);
 
-                _logger.LogInformation($"Send message, TO: {messagePacket.Topic} /DATA: {messagePacket.Data}"); //remove it later
+                _logger.LogInformation($">>> MQTT | {messagePacket.Topic} | {messagePacket.Data}"); //remove it later
             }
             else
             {
@@ -190,22 +196,7 @@ public class MqttClient
             throw new InvalidOperationException("The data cannot be empty");
     }
 
-    private byte[] SerializeData(MessagePacket dataPacket)
-    {
-        var data = Encoding.ASCII.GetBytes(dataPacket.Data);
+    private byte[] SerializeData(MessagePacket dataPacket) => Encoding.ASCII.GetBytes(dataPacket.Data);
 
-        return data;
-    }
-
-    private MessagePacket DeserializeData(byte[] buffer)
-    {
-        var data = Encoding.ASCII.GetString(buffer);
-
-        var msgPacket = new MessagePacket
-        {
-            Data = data
-        };
-
-        return msgPacket;
-    }
+    private MessagePacket DeserializeData(byte[] buffer) => new() { Data = Encoding.ASCII.GetString(buffer) };
 }
