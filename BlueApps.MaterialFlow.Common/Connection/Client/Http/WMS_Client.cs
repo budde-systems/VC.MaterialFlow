@@ -95,6 +95,11 @@ public class WMS_Client //TODO: Use httpclient_factory
 
     private async Task Send(string url, string data, HttpMethod httpMethod)
     {
+        #if DEBUG
+        return;
+        #endif
+
+
         using var client = new HttpClient();
 
         CreateHeader(client);
