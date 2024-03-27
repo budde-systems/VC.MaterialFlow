@@ -70,8 +70,8 @@ public class MqttClient
 
             messageEvent.Message.Topic = msg.ApplicationMessage.Topic;
 
-            _logger.LogInformation("<<< MQTT | {0} | {1}", messageEvent.Message.Topic, messageEvent.Message.Data);
-
+            if (!msg.ApplicationMessage.Topic.StartsWith("MaterialFlow/webservice/workerservice"))
+                _logger.LogInformation("<<< MQTT | {0} | {1}", messageEvent.Message.Topic, messageEvent.Message.Data);
 
             OnReceivingMessage?.Invoke(this, messageEvent); 
         }
